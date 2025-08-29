@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ampelios"
+version = "0.1.0"
+description = "Automatic customer segmentation and clustering pipeline"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy==2.3.2",
+    "python-dotenv==1.1.1",
+    "psycopg[binary]==3.2.9",
+    "scikit-learn==1.7.1",
+    "joblib==1.5.1",
+    "prefect==3.4.14",
+    "fastapi==0.116.1",
+    "uvicorn==0.35.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pip-tools>=7.5,<8",
+    "pytest>=8.4,<9",
+    "pytest-asyncio>=1.1,<2",
+    "ruff>=0.12,<1",
+]
+
+[tool.setuptools.packages.find]
+where = ["pipeline", "server"]
+exclude = ["models*"]

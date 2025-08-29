@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: ampelios_postgres
+    environment:
+      POSTGRES_USER: segmenter
+      POSTGRES_PASSWORD: segmenter1
+      POSTGRES_DB: segments
+      POSTGRES_INITDB_ARGS: "--locale=C.UTF-8 --encoding=UTF8"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+
+  ampelios:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: ampelios
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_USER: segmenter
+      POSTGRES_PASSWORD: segmenter1
+      POSTGRES_DB: segments
+      POSTGRES_HOST: postgres
+    ports:
+      - "1032:1032"
+    volumes:
+      - ../init-data:/app/init-data
+      - ../models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1032/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pgdata:
