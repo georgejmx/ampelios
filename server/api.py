@@ -1,7 +1,8 @@
 import logging
 import sys
 import asyncio
-from typing_extensions import Any
+from dataclasses import dataclass
+from typing_extensions import Any, Optional
 from fastapi import FastAPI
 from fastapi.background import BackgroundTasks
 from fastapi.responses import PlainTextResponse
@@ -29,9 +30,21 @@ def health_handler() -> str:
     return "Healthy"
 
 
+@dataclass
+class TriggerRequest:
+    events_path: str
+    is_initial_flow: Optional[bool] = None
+
+
 @api.post("/trigger")
-async def trigger_pipeline(background_tasks: BackgroundTasks) -> dict:
-    background_tasks.add_task(lambda: asyncio.run(bulk_pipeline()))
+async def trigger_handler(
+    req: TriggerRequest,
+    background_tasks: BackgroundTasks
+) -> dict:
+    background_tasks.add_task(lambda: asyncio.run(bulk_pipeline(
+        req.events_path,
+        req.is_initial_flow or False,
+    )))
 
     return {"status": "started"}
 

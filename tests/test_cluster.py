@@ -78,3 +78,25 @@ async def test_cluster(user_journeys_fixture):
         for user_id, cluster_id in assign_args[0]:
             assert 90 < user_id < 100, "Original user ids are preserved"
             assert 0 <= cluster_id < 3, "Cluster ids are natural"
+
+
+@pytest.mark.asyncio
+async def test_cluster_initial_flow(user_journeys_fixture):
+    """
+    Checks clustering logic when `is_initial_flow=True`, meaning the model is nudged away from random clusters faster
+    """
+    NUM_CLUSTERS = 2
+
+    with patch("pipeline.cluster.main.get_user_journeys", new_callable=AsyncMock) as mock_get, \
+    patch("pipeline.cluster.main.assign_clusters", new_callable=AsyncMock) as mock_assign, \
+    patch("pipeline.cluster.main.write_centroids", new_callable=AsyncMock) as mock_write:
+        mock_get.return_value = user_journeys_fixture
+        mock_assign.return_value = None
+        mock_write.return_value = None
+
+        result = await cluster(TEST_MODEL_PATH, NUM_CLUSTERS, 100, True)
+        assert result['status'] == 'success'
+        assign_args, _ = mock_assign.call_args
+        for user_id, cluster_id in assign_args[0]:
+            assert 90 < user_id < 100, "Original user ids are preserved"
+            assert 0 <= cluster_id < 3, "Cluster ids are natural"

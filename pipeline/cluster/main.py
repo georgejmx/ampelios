@@ -26,7 +26,12 @@ def parse_prediction_source(journeys: list[UserJourneyRow]) -> list[NDArray]:
     return [extract_features(j) for j in journeys]
 
 
-async def main(model_path: str, num_clusters: int, fetch_batch_size: int) -> TaskSignature:
+async def main(
+    model_path: str,
+    num_clusters: int,
+    fetch_batch_size: int,
+    is_initial_flow=False
+) -> TaskSignature:
     journeys = await get_user_journeys(fetch_batch_size)
     journey_count = len(journeys)
 
@@ -43,11 +48,17 @@ async def main(model_path: str, num_clusters: int, fetch_batch_size: int) -> Tas
     else:
         model = MiniBatchKMeans(
             n_clusters=num_clusters,
-            batch_size=journey_count
+            batch_size=journey_count,
+            random_state=24,
+            init="k-means++"
         )
 
     user_ids = [j['user_id'] for j in journeys]
     prediction_source = parse_prediction_source(journeys)
+
+    # nudge towards sensible clusters faster
+    if is_initial_flow:
+        model.partial_fit(prediction_source)
 
     model.partial_fit(prediction_source)
     batch_labels = model.predict(prediction_source)

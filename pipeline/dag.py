@@ -9,7 +9,6 @@ from .load import main as load
 from .cluster import main as cluster
 
 
-SOURCE_FILEPATH = "./init-data/events.csv"
 USER_BATCH_SIZE = 20000
 BATCH_SIZE = 50000
 CLUSTERING_MODEL_PATH = "./models/mini-batch-k-means.pkl"
@@ -17,8 +16,8 @@ CLUSTER_COUNT = 5
 
 
 @task(retries=1, retry_delay_seconds=2)
-async def save_raw_events() -> TaskSignature:
-    return await save(SOURCE_FILEPATH)
+async def save_raw_events(source_filepath: str) -> TaskSignature:
+    return await save(source_filepath)
 
 
 @task(retries=1, retry_delay_seconds=2)
@@ -42,13 +41,18 @@ async def load_journeys(batch_size: int) -> TaskSignature:
     retry_jitter_factor=0.2,
     timeout_seconds=90,
 )
-async def cluster_journeys(batch_size: int) -> TaskSignature:
-    return await cluster(CLUSTERING_MODEL_PATH, CLUSTER_COUNT, batch_size)
+async def cluster_journeys(batch_size: int, is_initial_flow: bool) -> TaskSignature:
+    return await cluster(
+        CLUSTERING_MODEL_PATH,
+        CLUSTER_COUNT,
+        batch_size,
+        is_initial_flow
+    )
 
 
 @flow
-async def bulk_pipeline() -> None:
-    save_result = await save_raw_events()
+async def bulk_pipeline(events_path: str, is_initial_flow: bool) -> None:
+    save_result = await save_raw_events(events_path)
     logger.info(save_result["message"])
     if save_result["status"] != 'success':
         return
@@ -70,7 +74,7 @@ async def bulk_pipeline() -> None:
         load_count += 1
 
         if load_count % 2 == 0:
-            cluster_result = await cluster_journeys(BATCH_SIZE * 2)
+            cluster_result = await cluster_journeys(BATCH_SIZE * 2, is_initial_flow)
             logger.info(cluster_result["message"])
             if cluster_result["status"] == 'error':
                 break
@@ -83,4 +87,4 @@ async def bulk_pipeline() -> None:
 if __name__ == "__main__":
     import asyncio
 
-    asyncio.run(bulk_pipeline())
+    asyncio.run(bulk_pipeline("./init-data/events.csv", True))
