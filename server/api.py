@@ -10,6 +10,13 @@ from pipeline.dag import bulk_pipeline
 from .view import get_clusters
 
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+
 api = FastAPI(
     title="ampelios-server",
     summary="Control point for the ampelios-pipeline",

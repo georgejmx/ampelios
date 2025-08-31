@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS user_journey (
 	FOREIGN KEY (site_id, cluster_id) REFERENCES cluster(site_id, cluster_id)
 );
 
+CREATE INDEX idx_events_visitorid_timestamp ON events(visitorid, timestamp);
+
 -- speed up acessing the first unprocessed event per session
 CREATE INDEX idx_events_unprocessed_sessiontime
     ON events (visitorid, sessionnumber, timestamp)

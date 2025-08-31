@@ -55,7 +55,7 @@ async def main(model_path: str, num_clusters: int, fetch_batch_size: int) -> Tas
 
     await write_centroids(centroids)
 
-    # ensure clusters already set up for foreign key reference
+    # ensure clusters already set up
     await assign_clusters(zip(user_ids, batch_labels))
 
     dump(model, model_path)

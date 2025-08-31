@@ -1,9 +1,7 @@
 from prefect import flow, task
-from prefect.tasks import task_input_hash
-from datetime import timedelta
 
 from pipeline.types import TaskSignature
-from pipeline.logging import logger as logging
+from pipeline.logging import logger
 
 from .save import main as save
 from .save_sessions import main as save_sessions
@@ -30,8 +28,8 @@ async def save_raw_events_sessions() -> TaskSignature:
 @task(
     retries=3,
     retry_delay_seconds=5,
-    cache_key_fn=task_input_hash,
-    cache_expiration=timedelta(days=1),
+    retry_jitter_factor=0.2,
+    timeout_seconds=90,
 )
 async def load_journeys(batch_size: int) -> TaskSignature:
     return await load(batch_size)
@@ -40,42 +38,46 @@ async def load_journeys(batch_size: int) -> TaskSignature:
 @task(
     retries=3,
     retry_delay_seconds=5,
-    cache_key_fn=task_input_hash,
-    cache_expiration=timedelta(days=1),
+    retry_jitter_factor=0.2,
+    timeout_seconds=90,
 )
 async def cluster_journeys(batch_size: int) -> TaskSignature:
     return await cluster(CLUSTERING_MODEL_PATH, CLUSTER_COUNT, batch_size)
 
 
 @flow
-async def bulk_pipeline():
+async def bulk_pipeline() -> None:
     save_result = await save_raw_events()
-    if save_result["status"] == 'success':
-        logging.info(f"{save_result["count"]} events loaded")
-    else:
-        logging.info(save_result["message"])
+    logger.info(save_result["message"])
+    if save_result["status"] != 'success':
+        return
 
+    # annotated_events = 0
+    # while annotated_events < save_result["count"]:
+    #     await save_raw_events_sessions()
+    #     annotated_events += BATCH_SIZE
     await save_raw_events_sessions()
-    logging.info("Sessions annotated")
+    logger.info("Sessions annotated")
 
     # run all loading and clustering
     clustered_events = 0
     load_count = 0
     while clustered_events < save_result["count"]:
         load_result = await load_journeys(BATCH_SIZE)
-        logging.info(load_result["message"])
+        logger.info(load_result["message"])
         if load_result["status"] != 'success':
             break
         load_count += 1
 
         if load_count % 2 == 0:
             cluster_result = await cluster_journeys(BATCH_SIZE * 2)
-            logging.info(cluster_result["message"])
-            if cluster_result["status"] != 'success':
+            logger.info(cluster_result["message"])
+            if cluster_result["status"] == 'error':
                 break
-            clustered_events += BATCH_SIZE * 2
 
-    logging.info("Bulk pipeline complete")
+        clustered_events += BATCH_SIZE
+
+    logger.info("Bulk pipeline complete")
 
 
 if __name__ == "__main__":

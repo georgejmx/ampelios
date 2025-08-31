@@ -1,4 +1,4 @@
-from pipeline.logging import logger as logging
+from pipeline.logging import logger
 from typing import ItemsView
 from psycopg.rows import TupleRow
 
@@ -95,7 +95,7 @@ async def batch_update_user_journeys(
                                 user_id,
                             ),
                         )
-                        logging.info(f"User with id {user_id} journey updated")
+                        logger.info(f"User with id {user_id} journey updated")
                     else:
                         state_list = (
                             journey["state"].tolist()
@@ -116,7 +116,7 @@ async def batch_update_user_journeys(
                     VALUES {",".join(values_parts)}
                     """
                     await cur.execute(insert_query)
-                    logging.info(f"{len(inserts)} new user journeys created")
+                    logger.info(f"{len(inserts)} new user journeys created")
 
 
 async def mark_events_processed(ids: list[int]):

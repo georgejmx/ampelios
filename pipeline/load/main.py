@@ -1,4 +1,4 @@
-from pipeline.logging import logger as logging
+from pipeline.logging import logger
 from pipeline.types import TaskSignature
 
 from .postgres import (
@@ -14,20 +14,20 @@ async def main(batch_size: int) -> TaskSignature:
     load_count = len(raw_journeys_batch)
 
     if load_count == 0:
-        logging.warning("No events available for processing")
+        logger.warning("No events available for processing")
         return {
             'status': 'skipped',
             'message': 'Ran out of unprocessed events',
             'count': 0
         }
     else:
-        logging.info(f"{load_count} user journeys extracted")
+        logger.info(f"{load_count} user journeys extracted")
 
     user_journeys = process_rows(raw_journeys_batch)
     await batch_update_user_journeys(user_journeys.items())
 
     await mark_events_processed([e[0] for e in raw_journeys_batch])
-    logging.info(f"{load_count} events marked as processed")
+    logger.info(f"{load_count} events marked as processed")
 
     return {
         'status': 'success',

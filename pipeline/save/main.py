@@ -48,6 +48,6 @@ async def main(source_filepath: str) -> TaskSignature:
 
     return {
         'status': 'success',
-        'message': 'Events saved',
+        'message': f"{count} events loaded",
         'count': count
     }
