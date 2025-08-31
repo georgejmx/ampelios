@@ -1,11 +1,14 @@
+x-postgres-env: &postgres-env
+  POSTGRES_USER: ampelios
+  POSTGRES_PASSWORD: segmenter1
+  POSTGRES_DB: ampelios
+
 services:
   postgres:
     image: pgvector/pgvector:pg17
     container_name: ampelios_postgres
     environment:
-      POSTGRES_USER: segmenter
-      POSTGRES_PASSWORD: segmenter1
-      POSTGRES_DB: segments
+      <<: *postgres-env
       POSTGRES_INITDB_ARGS: "--locale=C.UTF-8 --encoding=UTF8"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -19,10 +22,10 @@ services:
     depends_on:
       - postgres
     environment:
-      POSTGRES_USER: segmenter
-      POSTGRES_PASSWORD: segmenter1
-      POSTGRES_DB: segments
+      <<: *postgres-env
       POSTGRES_HOST: postgres
+      PREFECT_LOGGING_LEVEL: INFO
+      PREFECT_LOGGING_SERVER_LEVEL: INFO
     ports:
       - "1032:1032"
     volumes:

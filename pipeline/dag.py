@@ -10,6 +10,7 @@ from .cluster import main as cluster
 
 
 SOURCE_FILEPATH = "./init-data/events.csv"
+USER_BATCH_SIZE = 20000
 BATCH_SIZE = 50000
 CLUSTERING_MODEL_PATH = "./models/mini-batch-k-means.pkl"
 CLUSTER_COUNT = 5
@@ -21,8 +22,8 @@ async def save_raw_events() -> TaskSignature:
 
 
 @task(retries=1, retry_delay_seconds=2)
-async def save_raw_events_sessions() -> TaskSignature:
-    return await save_sessions()
+async def save_raw_events_sessions(batch_size: int) -> TaskSignature:
+    return await save_sessions(batch_size)
 
 
 @task(
@@ -52,11 +53,10 @@ async def bulk_pipeline() -> None:
     if save_result["status"] != 'success':
         return
 
-    # annotated_events = 0
-    # while annotated_events < save_result["count"]:
-    #     await save_raw_events_sessions()
-    #     annotated_events += BATCH_SIZE
-    await save_raw_events_sessions()
+    while True:
+        annotated_users = await save_raw_events_sessions(USER_BATCH_SIZE)
+        if annotated_users["count"] == 0:
+            break
     logger.info("Sessions annotated")
 
     # run all loading and clustering

@@ -16,7 +16,10 @@ async def test_bulk_pipeline_success():
 
         mock_save.return_value = {"status": "success", "message": "Events saved", "count": 50004}
 
-        mock_save_sessions.return_value = None
+        mock_save_sessions.side_effect = [
+            {"status": "success", "message": "Sessions saved to event data", "count": 19000},
+            {"status": "success", "message": "Sessions saved to event data", "count": 0}
+        ]
 
         mock_load.side_effect = [
             {"status": "success", "message": "23452 user journeys written", "count": 23452},
@@ -29,7 +32,7 @@ async def test_bulk_pipeline_success():
 
         mock_log.info.assert_called()
         assert mock_save.await_count == 1
-        assert mock_save_sessions.await_count == 1
+        assert mock_save_sessions.await_count == 2
         assert mock_load.await_count == 2
         assert mock_cluster.await_count == 1
 
