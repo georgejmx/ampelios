@@ -14,7 +14,7 @@ Ampelios is a data pipeline and microservice that takes raw browser event data a
 
 ## Sample Input / Output
 
-### Input
+### Input (CSV)
 
 ```csv
 timestamp,visitorid,event,transactionid
@@ -26,10 +26,11 @@ timestamp,visitorid,event,transactionid
 
 ### Output (JSON)
 
+```json
 [
   {
     "id": 0,
-    "users": [0, 6, 7, 13, 22, ...],
+    "users": [0, 6, 7, 13, 22],
     "centroid": [
       1.5968122,
       0.03344515,
@@ -41,7 +42,7 @@ timestamp,visitorid,event,transactionid
   },
   {
     "id": 1,
-    "users": [302, 588, 904, 914, 159, ...],
+    "users": [302, 588, 904, 914, 159],
     "centroid": [
       0.9970998,
       0.012757817,
@@ -53,7 +54,7 @@ timestamp,visitorid,event,transactionid
   },
   {
     "id": 2,
-    "users": [1722, 1879, 2019, 2114, 2194, ...],
+    "users": [1722, 1879, 2019, 2114, 2194],
     "centroid": [
       13.875828,
       0.6650781,
@@ -65,7 +66,7 @@ timestamp,visitorid,event,transactionid
   },
   {
     "id": 3,
-    "users": [2, 37, 51, 54, 64, ...],
+    "users": [2, 37, 51, 54, 64],
     "centroid": [
       5.205463,
       0.10490605,
@@ -77,7 +78,7 @@ timestamp,visitorid,event,transactionid
   },
   {
     "id": 4,
-    "users": [1, 3, 4, 5, 8, ...],
+    "users": [1, 3, 4, 5, 8],
     "centroid": [
       1,
       0,
@@ -88,6 +89,9 @@ timestamp,visitorid,event,transactionid
     ]
   }
 ]
+```
+
+_Note that the users field has been truncated for easy viewing_
 
 ---
 
