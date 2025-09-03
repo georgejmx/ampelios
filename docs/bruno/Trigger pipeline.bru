@@ -1,0 +1,22 @@
+meta {
+  name: Trigger pipeline
+  type: http
+  seq: 2
+}
+
+post {
+  url: 127.0.0.1:1032/trigger
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "events_path": "./init-data/events.csv",
+    "is_initial_flow": true
+  }
+}
+
+settings {
+  encodeUrl: true
+}

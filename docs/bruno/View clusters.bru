@@ -1,0 +1,15 @@
+meta {
+  name: View clusters
+  type: http
+  seq: 4
+}
+
+get {
+  url: 127.0.0.1:1032/view
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

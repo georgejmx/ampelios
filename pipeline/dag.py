@@ -16,7 +16,7 @@ CLUSTER_COUNT = 5
 
 
 @task(retries=1, retry_delay_seconds=2)
-async def save_raw_events(source_filepath: str) -> TaskSignature:
+async def save_raw_events_csv(source_filepath: str) -> TaskSignature:
     return await save(source_filepath)
 
 
@@ -52,7 +52,7 @@ async def cluster_journeys(batch_size: int, is_initial_flow: bool) -> TaskSignat
 
 @flow
 async def bulk_pipeline(events_path: str, is_initial_flow: bool) -> None:
-    save_result = await save_raw_events(events_path)
+    save_result = await save_raw_events_csv(events_path)
     logger.info(save_result["message"])
     if save_result["status"] != 'success':
         return

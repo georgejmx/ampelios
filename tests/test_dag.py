@@ -8,7 +8,7 @@ from pipeline.dag import bulk_pipeline
 async def test_bulk_pipeline_success():
     """Check full pipeline; save, save sessions, load, cluster"""
 
-    with patch("pipeline.dag.save_raw_events", new_callable=AsyncMock) as mock_save, \
+    with patch("pipeline.dag.save_raw_events_csv", new_callable=AsyncMock) as mock_save, \
          patch("pipeline.dag.save_raw_events_sessions", new_callable=AsyncMock) as mock_save_sessions, \
          patch("pipeline.dag.load_journeys", new_callable=AsyncMock) as mock_load, \
          patch("pipeline.dag.cluster_journeys", new_callable=AsyncMock) as mock_cluster, \
@@ -41,7 +41,7 @@ async def test_bulk_pipeline_success():
 async def test_bulk_pipeline_save_failure():
     """Check that the pipeline does not run when saving events fails"""
 
-    with patch("pipeline.dag.save_raw_events", new_callable=AsyncMock) as mock_save, \
+    with patch("pipeline.dag.save_raw_events_csv", new_callable=AsyncMock) as mock_save, \
          patch("pipeline.dag.save_raw_events_sessions", new_callable=AsyncMock) as mock_save_sessions, \
          patch("pipeline.dag.load_journeys", new_callable=AsyncMock) as mock_load, \
          patch("pipeline.dag.cluster_journeys", new_callable=AsyncMock) as mock_cluster:
