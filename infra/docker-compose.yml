@@ -29,8 +29,8 @@ services:
     ports:
       - "1032:1032"
     volumes:
-      - ../init-data:/app/init-data
-      - ../models:/app/models
+      - models_data:/app/models
+      - ../init-data:/app/init-data # TODO: create server endpoint for loading from input
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:1032/health"]
       interval: 30s
@@ -39,3 +39,4 @@ services:
 
 volumes:
   pgdata:
+  models_data:
