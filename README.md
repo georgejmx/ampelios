@@ -93,7 +93,7 @@ _the demo dataset has 2.7 million rows_
 ]
 ```
 
-_Note that the users field has been truncated for easy viewing_
+_Note that the users fields have been truncated for easy viewing_
 
 ---
 
@@ -115,8 +115,10 @@ Please comply with the dataset license; it is only intended as a demo for Ampeli
 
 2. Start Ampelios with Docker:
 
+```bash
 cd infra
 docker compose up
+```
 
 3. Call the trigger endpoint to start a pipeline run.
 _Note: With the full dataset (~2.7M rows), it currently takes ~10 minutes. In production with incremental data, the pipeline could be polled every minute for smooth flow 🌊._
@@ -130,7 +132,7 @@ curl -X POST http://127.0.0.1:1032/trigger \
   }'
 ```
 
-4. Call the view clusters endpoint (also in the Bruno collection) to see results.
+4. Call the view clusters endpoint to see results.
 
 ```bash
 curl -X GET http://127.0.0.1:1032/view
@@ -153,8 +155,8 @@ The DAG handles all clustering steps from source data;
 
 A microservice wraps the pipeline as a Python module:
 
-- `/trigger` → start a pipeline run
-- `/view` → view output clusters
+- `POST /trigger` → start a pipeline run
+- `GET /view` → view output clusters
 
 ### Features Used for Clustering
 
