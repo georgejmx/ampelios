@@ -5,8 +5,7 @@
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
-pip install .
-pip-compile --output-file=requirements.txt pyproject.toml
+pip install .[dev]
 ```
 
 2. Run pipeline locally
@@ -26,7 +25,6 @@ This ensures that each site’s model (e.g. `k-means-{site-id}-{cluster_count}.p
 Unit tests and linting can now be run locally as follows;
 
 ```bash
-pip install .[dev]
 pytest
 ruff check
 ```

@@ -2,9 +2,9 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY pyproject.toml requirements.txt ./
+COPY pyproject.toml constraints.txt ./
 RUN pip install --upgrade pip && \
-    pip install .
+    pip install . -c constraints.txt
 
 COPY pipeline ./pipeline
 COPY server ./server

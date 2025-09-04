@@ -24,6 +24,8 @@ timestamp,visitorid,event,transactionid
 433193500981,122686,transaction,11
 ```
 
+_the demo dataset has 2.7 million rows_
+
 ### Output (JSON)
 
 ```json
@@ -116,10 +118,23 @@ Please comply with the dataset license; it is only intended as a demo for Ampeli
 cd infra
 docker compose up
 
-3. Call the trigger endpoint as defined in the [Bruno collection](./docs/bruno) to start a pipeline run.
+3. Call the trigger endpoint to start a pipeline run.
 _Note: With the full dataset (~2.7M rows), it currently takes ~10 minutes. In production with incremental data, the pipeline could be polled every minute for smooth flow 🌊._
 
+```bash
+curl -X POST http://127.0.0.1:1032/trigger \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events_path": "./init-data/events.csv",
+    "is_initial_flow": true
+  }'
+```
+
 4. Call the view clusters endpoint (also in the Bruno collection) to see results.
+
+```bash
+curl -X GET http://127.0.0.1:1032/view
+```
 
 ---
 

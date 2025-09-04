@@ -50,8 +50,8 @@ async def trigger_handler(
 
 
 @api.get("/view")
-async def view_handler() -> Any:
-    clusters = await get_clusters()
+async def view_handler(verbose: bool = False) -> Any:
+    clusters = await get_clusters(verbose)
     logging.info(f"{len(clusters)} retrieved")
 
     return clusters
