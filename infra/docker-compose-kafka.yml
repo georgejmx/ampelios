@@ -7,15 +7,15 @@ services:
   postgres:
     image: pgvector/pgvector:pg17
     container_name: ampelios_postgres
+    environment:
+      <<: *postgres-env
+      POSTGRES_INITDB_ARGS: "--locale=C.UTF-8 --encoding=UTF8"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ampelios -d ampelios"] # replace with environment variables
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-    environment:
-      <<: *postgres-env
-      POSTGRES_INITDB_ARGS: "--locale=C.UTF-8 --encoding=UTF8"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - pgdata:/var/lib/postgresql/data
@@ -34,8 +34,8 @@ services:
       retries: 3
     environment:
       KAFKA_NODE_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
@@ -47,15 +47,15 @@ services:
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
-      KAFKA_LISTENERS: 'PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
-      CONFLUENT_METRICS_ENABLE: 'true'
-      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
-      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@broker:29093"
+      KAFKA_LISTENERS: "PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+      CONFLUENT_METRICS_ENABLE: "true"
+      CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
 
   kafka-topics-setup:
     image: confluentinc/cp-kafka:latest
@@ -69,10 +69,10 @@ services:
   bento_init:
     image: ghcr.io/warpstreamlabs/bento:latest
     container_name: bento_init
-    depends_on: 
+    depends_on:
       kafka-topics-setup:
-          condition: service_completed_successfully
-          restart: true
+        condition: service_completed_successfully
+        restart: true
     command: ["-c", "/bento_streams/load_csv_to_kafka.yml"]
     volumes:
       - ./bento_streams:/bento_streams
@@ -85,14 +85,14 @@ services:
     container_name: ampelios
     depends_on:
       postgres:
-          condition: service_healthy
-          restart: true
+        condition: service_healthy
+        restart: true
       broker:
-          condition: service_healthy
-          restart: true
+        condition: service_healthy
+        restart: true
       bento_init:
-          condition: service_completed_successfully
-          restart: true
+        condition: service_completed_successfully
+        restart: true
     environment:
       <<: *postgres-env
       POSTGRES_HOST: postgres
