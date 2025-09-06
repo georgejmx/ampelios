@@ -1,0 +1,9 @@
+input:
+  csv: 
+    paths: ["./init-data/events.csv"]
+
+output:
+  kafka_franz: 
+    seed_brokers: ["broker:29092"]
+    topic: "events-topic"
+    key: ${! json("timestamp") + json("visitorid")}
