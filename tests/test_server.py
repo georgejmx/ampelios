@@ -14,7 +14,11 @@ def test_health():
 
 def test_trigger_handler():
     with patch("server.api.bulk_pipeline", new_callable=AsyncMock):
-        payload = {"events_path": "./init-data/events.csv", "is_initial_flow": True}
+        payload = {
+            "site_id": 1,
+            "events_path": "./init-data/events.csv",
+            "is_initial_flow": True
+        }
         response = client.post("/trigger", json=payload)
 
     assert response.status_code == 200
