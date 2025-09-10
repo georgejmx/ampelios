@@ -19,7 +19,7 @@ def _parse_user_journey_row(result: TupleRow) -> UserJourneyRow:
     }
 
 
-async def get_user_journeys(batch_size: int) -> list[UserJourneyRow]:
+async def get_user_journeys(batch_size: int, source_id: int) -> list[UserJourneyRow]:
     results: list[TupleRow] = []
 
     async with get_connection() as conn:
@@ -27,17 +27,17 @@ async def get_user_journeys(batch_size: int) -> list[UserJourneyRow]:
             query = """
             SELECT j._id, j.user_id, j.state, j.paths
             FROM user_journey j
-            WHERE j.cluster_id IS NULL AND j.site_id = 1
+            WHERE j.cluster_id IS NULL AND j.source_id = %s
             ORDER BY _id
             LIMIT %s;
             """
-            await cur.execute(query, (batch_size,))
+            await cur.execute(query, (source_id, batch_size,))
             results = await cur.fetchall()
 
     return [ _parse_user_journey_row(result) for result in results]
 
 
-async def assign_clusters(user_clusters: Iterator[tuple[int, int]]):
+async def assign_clusters(user_clusters: Iterator[tuple[int, int]], source_id: int):
     async with get_connection() as conn:
         async with conn.transaction():
             async with conn.cursor() as cur:
@@ -50,21 +50,26 @@ async def assign_clusters(user_clusters: Iterator[tuple[int, int]]):
                 UPDATE user_journey j
                 SET cluster_id = t.cluster_id
                 FROM tmp_clusters t
-                WHERE j.user_id = t.user_id AND j.site_id = 1;
-                """)
+                WHERE j.user_id = t.user_id AND j.source_id = %s;
+                """, (source_id,))
 
 
-async def write_centroids(centroids: NDArray):
+async def write_centroids(centroids: NDArray, source_id: int):
     async with get_connection() as conn:
         async with conn.transaction():
             async with conn.cursor() as cur:
                 for i, centroid in enumerate(centroids):
                     await cur.execute("""
-                    INSERT INTO cluster (site_id, cluster_id, centroid)
+                    INSERT INTO cluster (source_id, cluster_id, centroid)
                     SELECT 1, %(cluster_id)s, %(centroid)s
                     WHERE NOT EXISTS (
                         SELECT 1
                         FROM cluster
-                        WHERE site_id = 1 AND cluster_id = %(cluster_id)s
+                        WHERE source_id = %(source_id)s
+                            AND cluster_id = %(cluster_id)s
                     );
-                    """, { "cluster_id": i, "centroid": centroid.tolist() })
+                    """, {
+                        "source_id": source_id,
+                        "cluster_id": i,
+                        "centroid": centroid.tolist()
+                    })

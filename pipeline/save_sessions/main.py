@@ -5,14 +5,14 @@ from pipeline.types import TaskSignature
 SESSION_DURATION_IN_MINUTES = 20
 
 
-async def main(batch_size: int, site_id: int) -> TaskSignature:
+async def main(batch_size: int, source_id: int) -> TaskSignature:
     query = """
     WITH visitor_batch AS (
         SELECT visitorid
         FROM events
         WHERE processed IS NOT TRUE
             AND sessionnumber IS NULL
-            AND site_id = %(site_id)s
+            AND source_id = %(source_id)s
         GROUP BY visitorid
         ORDER BY visitorid
         LIMIT %(batch_size)s
@@ -20,20 +20,20 @@ async def main(batch_size: int, site_id: int) -> TaskSignature:
     diffs AS (
         SELECT
             e._id,
-            e.site_id,
+            e.source_id,
             e.visitorid,
             e.timestamp,
             LAG(e.timestamp) OVER (
-                PARTITION BY e.site_id, e.visitorid ORDER BY e.timestamp
+                PARTITION BY e.source_id, e.visitorid ORDER BY e.timestamp
             ) AS prev_time
         FROM events e
         JOIN visitor_batch vb ON e.visitorid = vb.visitorid
-        WHERE e.site_id = %(site_id)s
+        WHERE e.source_id = %(source_id)s
     ),
     session_flags AS (
         SELECT
             _id,
-            site_id,
+            source_id,
             visitorid,
             timestamp,
             CASE
@@ -46,10 +46,10 @@ async def main(batch_size: int, site_id: int) -> TaskSignature:
     sessions AS (
         SELECT
             _id,
-            site_id,
+            source_id,
             visitorid,
             SUM(new_session_flag) OVER (
-                PARTITION BY site_id, visitorid ORDER BY timestamp ROWS UNBOUNDED PRECEDING
+                PARTITION BY source_id, visitorid ORDER BY timestamp ROWS UNBOUNDED PRECEDING
             ) AS session_number
         FROM session_flags
     )
@@ -57,7 +57,7 @@ async def main(batch_size: int, site_id: int) -> TaskSignature:
     SET sessionnumber = s.session_number
     FROM sessions s
     WHERE e._id = s._id
-        AND e.site_id = %(site_id)s;
+        AND e.source_id = %(source_id)s;
     """
     count = 0
 
@@ -67,7 +67,7 @@ async def main(batch_size: int, site_id: int) -> TaskSignature:
                 await cur.execute(query, {
                     "batch_size": batch_size,
                     "session_duration": SESSION_DURATION_IN_MINUTES,
-                    "site_id": site_id
+                    "source_id": source_id
                 })
                 count = cur.rowcount
 

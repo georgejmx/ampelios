@@ -9,8 +9,8 @@ from .postgres import (
 from .transforms import process_rows
 
 
-async def main(batch_size: int, site_id: int) -> TaskSignature:
-    raw_journeys_batch = await fetch_user_journey_batch(batch_size, site_id)
+async def main(batch_size: int, source_id: int) -> TaskSignature:
+    raw_journeys_batch = await fetch_user_journey_batch(batch_size, source_id)
     load_count = len(raw_journeys_batch)
 
     if load_count == 0:
@@ -24,7 +24,7 @@ async def main(batch_size: int, site_id: int) -> TaskSignature:
         logger.info(f"{load_count} user journeys extracted")
 
     user_journeys = process_rows(raw_journeys_batch)
-    await batch_update_user_journeys(user_journeys.items(), site_id)
+    await batch_update_user_journeys(user_journeys.items(), source_id)
 
     await mark_events_processed([e[0] for e in raw_journeys_batch])
     logger.info(f"{load_count} events marked as processed")

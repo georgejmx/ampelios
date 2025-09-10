@@ -8,7 +8,7 @@ A way of starting the Python DAG pipeline from a single control point. This sets
 
 #### Body Parameters
 
-- _site_id (int)_; a unique number to identify this site within **ampelios**
+- _source_id (int)_; a unique number to identify this site within **ampelios**
 - _events_path (string)_; path to the source dataset to use as input. In future events could be sent in the body or passed directly as a file attachment
 - _is_initial_flow (boolean)_; wether this is the first run for this site/dataset. Used to include warming up of the machine learning model for better cluster convergence in the inital run
 

@@ -15,7 +15,7 @@ def test_health():
 def test_trigger_handler():
     with patch("server.api.bulk_pipeline", new_callable=AsyncMock):
         payload = {
-            "site_id": 1,
+            "source_id": 1,
             "events_path": "./init-data/events.csv",
             "is_initial_flow": True
         }

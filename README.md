@@ -127,7 +127,7 @@ _Note: With the full dataset (~2.7M rows), it currently takes ~10 minutes. In pr
 curl -X POST http://127.0.0.1:1032/trigger \
   -H "Content-Type: application/json" \
   -d '{
-    "site_id": 1,
+    "source_id": 1,
     "events_path": "./init-data/events.csv",
     "is_initial_flow": true
   }'

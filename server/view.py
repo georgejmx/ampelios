@@ -22,9 +22,9 @@ async def get_clusters(verbose: bool) -> list[ClusterRow]:
             c.centroid
         FROM user_journey j
         JOIN cluster c
-            ON j.site_id = c.site_id
+            ON j.source_id = c.source_id
             AND j.cluster_id = c.cluster_id
-        WHERE j.site_id = 1
+        WHERE j.source_id = 1
         GROUP BY j.cluster_id, c.centroid
         ORDER BY j.cluster_id;
         """
@@ -36,9 +36,9 @@ async def get_clusters(verbose: bool) -> list[ClusterRow]:
             c.centroid
         FROM user_journey j
         JOIN cluster c
-            ON j.site_id = c.site_id
+            ON j.source_id = c.source_id
             AND j.cluster_id = c.cluster_id
-        WHERE j.site_id = 1
+        WHERE j.source_id = 1
         GROUP BY j.cluster_id, c.centroid
         ORDER BY j.cluster_id;
         """
