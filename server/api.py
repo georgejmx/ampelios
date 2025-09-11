@@ -48,12 +48,12 @@ async def trigger_handler(
         req.is_initial_flow or False,
     )))
 
-    return {"status": "started"}
+    return {"detail": "started"}
 
 
 @api.get("/view")
-async def view_handler(verbose: bool = False) -> Any:
-    clusters = await get_clusters(verbose)
+async def view_handler(source_id: int, verbose: bool = False) -> list[Any]:
+    clusters = await get_clusters(source_id, verbose)
     logging.info(f"{len(clusters)} retrieved")
 
     return clusters

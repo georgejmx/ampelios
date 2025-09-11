@@ -18,7 +18,7 @@ python3.12 -m pipeline.dag
 Note: The `./models` directory is only used for local development and is persisted on your host machine.
 
 In production, models are stored in a **named Docker volume** mounted at `/app/models`.
-This ensures that each site’s model (e.g. `k-means-{site-id}-{cluster_count}.pkl`) is persisted across flows and container restarts, while still isolated from the host filesystem.
+This ensures that each site’s model (e.g. `mini-batch-k-means-{source_id}.pkl`) is persisted across flows and container restarts, while still isolated from the host filesystem.
 
 ## Tooling
 
