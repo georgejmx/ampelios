@@ -11,7 +11,7 @@ from pipeline.db_utils import (
 )
 
 
-async def fetch_user_journey_batch(batch_size: int) -> list[TupleRow]:
+async def fetch_user_journey_batch(batch_size: int, source_id: int) -> list[TupleRow]:
     query = """
     WITH unprocessed_sessions AS (
         SELECT MIN(timestamp) AS first_event_id,
@@ -19,9 +19,10 @@ async def fetch_user_journey_batch(batch_size: int) -> list[TupleRow]:
             sessionnumber
         FROM events
         WHERE processed IS NOT TRUE
+            AND source_id = %(source_id)s
         GROUP BY visitorid, sessionnumber
         ORDER BY MIN(timestamp)
-        LIMIT %s
+        LIMIT %(batch_size)s
     )
     SELECT e._id, e.visitorid, e.event, e.sessionnumber
     FROM events e
@@ -29,13 +30,17 @@ async def fetch_user_journey_batch(batch_size: int) -> list[TupleRow]:
         ON e.visitorid = u.visitorid
         AND e.sessionnumber = u.sessionnumber
     WHERE e.processed IS NOT TRUE
+        AND e.source_id = %(source_id)s
     ORDER BY e.visitorid, e.sessionnumber, e._id;
     """
     results = None
 
     async with get_connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(query, (batch_size,))
+            await cur.execute(query, {
+                "batch_size": batch_size,
+                "source_id": source_id
+            })
             results = await cur.fetchall()
 
     return results
@@ -43,6 +48,7 @@ async def fetch_user_journey_batch(batch_size: int) -> list[TupleRow]:
 
 async def batch_update_user_journeys(
     journeys: ItemsView[int, UserJourney],
+    source_id: int
 ):
     """Batch update multiple user journeys for better performance"""
     if not journeys:
@@ -59,9 +65,11 @@ async def batch_update_user_journeys(
                     query = f"""
                     SELECT user_id, state, paths
                     FROM user_journey
-                    WHERE user_id IN ({placeholders}) AND site_id = 1
+                    WHERE user_id IN ({placeholders}) AND source_id = %s
                     """
-                    await cur.execute(query, user_ids)
+
+                    params = user_ids + [source_id]
+                    await cur.execute(query, params)
                     results = await cur.fetchall()
 
                     for row in results:
@@ -86,13 +94,14 @@ async def batch_update_user_journeys(
                         update_query = f"""
                         UPDATE user_journey
                         SET state = %s, paths = {paths_array}, cluster_id = null
-                        WHERE user_id = %s AND site_id = 1
+                        WHERE user_id = %s AND source_id = %s
                         """
                         await cur.execute(
                             update_query,
                             (
                                 new_state,
                                 user_id,
+                                source_id,
                             ),
                         )
                         logger.info(f"User with id {user_id} journey updated")
@@ -109,10 +118,10 @@ async def batch_update_user_journeys(
                     for user_id, state, steps in inserts:
                         state_vector = f"'[{','.join([str(x) for x in state])}]'::vector"
                         paths_array = vector_array_to_postgres_string(steps)
-                        values_parts.append(f"({user_id}, 1, {state_vector}, {paths_array})")
+                        values_parts.append(f"({user_id}, {source_id}, {state_vector}, {paths_array})")
 
                     insert_query = f"""
-                    INSERT INTO user_journey (user_id, site_id, state, paths)
+                    INSERT INTO user_journey (user_id, source_id, state, paths)
                     VALUES {",".join(values_parts)}
                     """
                     await cur.execute(insert_query)

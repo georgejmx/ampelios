@@ -45,7 +45,7 @@ async def test_batch_update_inserts(journeys_fixture):
     mock_conn_cm.__aexit__ = AsyncMock(return_value=None)
 
     with patch("pipeline.load.postgres.get_connection", return_value=mock_conn_cm):
-        await batch_update_user_journeys(journeys_fixture)
+        await batch_update_user_journeys(journeys_fixture, 42)
 
     insert_calls = [c for c in mock_cursor.execute.call_args_list if c[0][0].strip().startswith("INSERT")]
 

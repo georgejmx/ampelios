@@ -1,11 +1,26 @@
 import csv
 from os import path
+from io import StringIO
 
 from pipeline.db_utils import get_connection
 from pipeline.types import TaskSignature
 
 
-async def main(source_filepath: str) -> TaskSignature:
+CSV_COLUMN_COUNT = 5
+
+
+def _write_line(row: list[str], source_id: int) -> str:
+    row = row[:CSV_COLUMN_COUNT]
+    while len(row) < CSV_COLUMN_COUNT:
+        row.append("")
+    row.append(str(source_id))
+
+    output = StringIO()
+    csv.writer(output).writerow(row)
+    return output.getvalue()
+
+
+async def main(source_filepath: str, source_id: int) -> TaskSignature:
     count = 0
 
     if not path.exists(source_filepath):
@@ -18,7 +33,10 @@ async def main(source_filepath: str) -> TaskSignature:
     async with get_connection() as conn:
         async with conn.transaction():
             async with conn.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM events;")
+                await cur.execute(
+                    "SELECT COUNT(*) FROM events WHERE source_id = %s;",
+                    (source_id,)
+                )
                 result = await cur.fetchone()
                 if not result:
                     return {
@@ -39,10 +57,10 @@ async def main(source_filepath: str) -> TaskSignature:
                     next(reader)
 
                     async with cur.copy(
-                        "COPY events(timestamp, visitorid, event, itemid, transactionid) FROM STDIN WITH CSV HEADER"
+                        "COPY events(timestamp, visitorid, event, itemid, transactionid, source_id) FROM STDIN WITH CSV"
                     ) as copy:
                         for row in reader:
-                            line = ",".join(row) + "\n"
+                            line = _write_line(row, source_id)
                             await copy.write(line)
                             count += 1
 

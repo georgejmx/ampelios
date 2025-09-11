@@ -7,7 +7,7 @@ from pipeline.types import UserJourneyRow
 from pipeline.cluster import main as cluster
 
 
-TEST_MODEL_PATH = "./tests/tmp/test-model.pkl"
+TEST_MODEL_DIR = "./tests/tmp"
 
 
 @pytest_asyncio.fixture
@@ -22,7 +22,7 @@ async def test_empty_data(blank_user_journeys_fixture):
     with patch("pipeline.cluster.main.get_user_journeys", new_callable=AsyncMock) as mock_get:
         mock_get.return_value = blank_user_journeys_fixture
 
-        result = await cluster(TEST_MODEL_PATH, 5, 100)
+        result = await cluster(42, TEST_MODEL_DIR, 5, 100)
         assert result['status'] == 'skipped'
         assert result['message'] == 'Ran out of unclustered user journeys'
 
@@ -63,7 +63,7 @@ async def test_cluster(user_journeys_fixture):
         mock_assign.return_value = None
         mock_write.return_value = None
 
-        result = await cluster(TEST_MODEL_PATH, NUM_CLUSTERS, 100)
+        result = await cluster(42, TEST_MODEL_DIR, NUM_CLUSTERS, 100)
         assert result['status'] == 'success'
         assert result['count'] == 3, "All three journeys should be clustered"
 
@@ -94,7 +94,7 @@ async def test_cluster_initial_flow(user_journeys_fixture):
         mock_assign.return_value = None
         mock_write.return_value = None
 
-        result = await cluster(TEST_MODEL_PATH, NUM_CLUSTERS, 100, True)
+        result = await cluster(42, TEST_MODEL_DIR, NUM_CLUSTERS, 100, True)
         assert result['status'] == 'success'
         assign_args, _ = mock_assign.call_args
         for user_id, cluster_id in assign_args[0]:

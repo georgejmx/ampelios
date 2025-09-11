@@ -120,22 +120,23 @@ cd infra
 docker compose up
 ```
 
-3. Call the trigger endpoint to start a pipeline run.
-_Note: With the full dataset (~2.7M rows), it currently takes ~10 minutes. In production with incremental data, the pipeline could be polled every minute for smooth flow 🌊._
+3. Call the trigger endpoint to start a pipeline run. Specify a _source_id_ to uniquely identify this dataset and derived clusters within _ampelios_.
+_Note: With the full sample dataset (~2.7M rows), it currently takes ~10 minutes. In production with incremental data, the pipeline could be polled every minute for smooth flow 🌊._
 
 ```bash
 curl -X POST http://127.0.0.1:1032/trigger \
   -H "Content-Type: application/json" \
   -d '{
+    "source_id": 1,
     "events_path": "./init-data/events.csv",
     "is_initial_flow": true
   }'
 ```
 
-4. Call the view clusters endpoint to see results.
+4. Call the view clusters endpoint to see results for the specified source.
 
 ```bash
-curl -X GET http://127.0.0.1:1032/view
+curl -X GET http://127.0.0.1:1032/view?source_id=1
 ```
 
 ---

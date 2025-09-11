@@ -26,13 +26,18 @@ def parse_prediction_source(journeys: list[UserJourneyRow]) -> list[NDArray]:
     return [extract_features(j) for j in journeys]
 
 
+def _parse_model_path(model_dir: str, source_id: int) -> str:
+    return f"{model_dir}/mini-batch-k-means-{source_id}.pkl"
+
+
 async def main(
-    model_path: str,
+    source_id: int,
+    model_dir: str,
     num_clusters: int,
     fetch_batch_size: int,
     is_initial_flow=False
 ) -> TaskSignature:
-    journeys = await get_user_journeys(fetch_batch_size)
+    journeys = await get_user_journeys(fetch_batch_size, source_id)
     journey_count = len(journeys)
 
     if journey_count == 0:
@@ -43,6 +48,7 @@ async def main(
         }
 
     model = None
+    model_path = _parse_model_path(model_dir, source_id)
     if path.exists(model_path):
         model = load(model_path)
     else:
@@ -64,10 +70,10 @@ async def main(
     batch_labels = model.predict(prediction_source)
     centroids: NDArray = model.cluster_centers_ # type: ignore
 
-    await write_centroids(centroids)
+    await write_centroids(centroids, source_id)
 
     # ensure clusters already set up
-    await assign_clusters(zip(user_ids, batch_labels))
+    await assign_clusters(zip(user_ids, batch_labels), source_id)
 
     dump(model, model_path)
     return {

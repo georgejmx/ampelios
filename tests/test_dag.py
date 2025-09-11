@@ -28,7 +28,7 @@ async def test_bulk_pipeline_success():
 
         mock_cluster.return_value = {"status": "success", "message": "23456 user journeys clustered", "count": 23456}
 
-        await bulk_pipeline.fn("./init-data/events.csv", False)
+        await bulk_pipeline.fn(42, "./init-data/events.csv", False)
 
         mock_log.info.assert_called()
         assert mock_save.await_count == 1
@@ -48,7 +48,7 @@ async def test_bulk_pipeline_save_failure():
 
         mock_save.return_value = {"status": "error", "message": "Unable to parse results from database", "count": 0}
 
-        await bulk_pipeline.fn("./init-data/events.csv", False)
+        await bulk_pipeline.fn(66, "./init-data/events.csv", False)
 
         mock_save_sessions.assert_not_awaited()
         mock_load.assert_not_awaited()

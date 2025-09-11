@@ -14,11 +14,15 @@ def test_health():
 
 def test_trigger_handler():
     with patch("server.api.bulk_pipeline", new_callable=AsyncMock):
-        payload = {"events_path": "./init-data/events.csv", "is_initial_flow": True}
+        payload = {
+            "source_id": 1,
+            "events_path": "./init-data/events.csv",
+            "is_initial_flow": True
+        }
         response = client.post("/trigger", json=payload)
 
     assert response.status_code == 200
-    assert response.json() == {"status": "started"}
+    assert response.json() == {"detail": "started"}
 
 
 def test_view_handler():
@@ -26,8 +30,8 @@ def test_view_handler():
 
     with patch("server.api.get_clusters", new_callable=AsyncMock) as mock_get_clusters:
         mock_get_clusters.return_value = mock_clusters
-        response = client.get("/view?verbose=true")
+        response = client.get("/view?source_id=42&verbose=true")
 
     assert response.status_code == 200
     assert response.json() == mock_clusters
-    mock_get_clusters.assert_called_once_with(True)
+    mock_get_clusters.assert_called_once_with(42, True)

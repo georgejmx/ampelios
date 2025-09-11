@@ -11,7 +11,7 @@ def _parse_cluster_row(result: TupleRow) -> ClusterRow:
     }
 
 
-async def get_clusters(verbose: bool) -> list[ClusterRow]:
+async def get_clusters(source_id: int, verbose: bool) -> list[ClusterRow]:
     cluster_data: list[TupleRow] = []
     query = ""
     if verbose:
@@ -22,9 +22,9 @@ async def get_clusters(verbose: bool) -> list[ClusterRow]:
             c.centroid
         FROM user_journey j
         JOIN cluster c
-            ON j.site_id = c.site_id
+            ON j.source_id = c.source_id
             AND j.cluster_id = c.cluster_id
-        WHERE j.site_id = 1
+        WHERE j.source_id = %s
         GROUP BY j.cluster_id, c.centroid
         ORDER BY j.cluster_id;
         """
@@ -36,16 +36,16 @@ async def get_clusters(verbose: bool) -> list[ClusterRow]:
             c.centroid
         FROM user_journey j
         JOIN cluster c
-            ON j.site_id = c.site_id
+            ON j.source_id = c.source_id
             AND j.cluster_id = c.cluster_id
-        WHERE j.site_id = 1
+        WHERE j.source_id = %s
         GROUP BY j.cluster_id, c.centroid
         ORDER BY j.cluster_id;
         """
 
     async with get_connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute(query)
+            await cur.execute(query, (source_id,))
             cluster_data = await cur.fetchall()
 
     return [ _parse_cluster_row(item) for item in cluster_data]

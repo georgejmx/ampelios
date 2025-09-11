@@ -32,6 +32,7 @@ def health_handler() -> str:
 
 @dataclass
 class TriggerRequest:
+    source_id: int
     events_path: str
     is_initial_flow: Optional[bool] = None
 
@@ -42,16 +43,17 @@ async def trigger_handler(
     background_tasks: BackgroundTasks
 ) -> dict:
     background_tasks.add_task(lambda: asyncio.run(bulk_pipeline(
+        req.source_id,
         req.events_path,
         req.is_initial_flow or False,
     )))
 
-    return {"status": "started"}
+    return {"detail": "started"}
 
 
 @api.get("/view")
-async def view_handler(verbose: bool = False) -> Any:
-    clusters = await get_clusters(verbose)
+async def view_handler(source_id: int, verbose: bool = False) -> list[Any]:
+    clusters = await get_clusters(source_id, verbose)
     logging.info(f"{len(clusters)} retrieved")
 
     return clusters

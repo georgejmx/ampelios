@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS events (
 	timestamp BIGINT NOT NULL,
 	visitorid INT NOT NULL,
 	event Varchar(20) NOT NULL,
+	source_id INT NOT NULL,
 	itemid INT NOT NULL,
 	transactionid INT,
 	sessionnumber INT,
@@ -12,29 +13,29 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE TABLE IF NOT EXISTS cluster (
-	site_id INT NOT NULL,
+	source_id INT NOT NULL,
 	cluster_id INT NOT NULL,
 	centroid vector(6),
-	PRIMARY KEY (site_id, cluster_id)
+	PRIMARY KEY (source_id, cluster_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_journey (
 	_id SERIAL PRIMARY KEY,
 	user_id INT NOT NULL UNIQUE,
-	site_id INT NOT NULL,
+	source_id INT NOT NULL,
 	state vector(3) NOT NULL,
 	paths vector[],
 	cluster_id INT,
-	FOREIGN KEY (site_id, cluster_id) REFERENCES cluster(site_id, cluster_id)
+	FOREIGN KEY (source_id, cluster_id) REFERENCES cluster(source_id, cluster_id)
 );
 
 CREATE INDEX idx_events_unprocessed_nullsession
-    ON events (visitorid)
+    ON events (source_id, visitorid)
     WHERE processed IS NOT TRUE AND sessionnumber IS NULL;
 
-CREATE INDEX idx_events_visitorid_timestamp ON events(visitorid, timestamp);
+CREATE INDEX idx_events_visitorid_timestamp ON events(source_id, visitorid, timestamp);
 
 -- speed up acessing the first unprocessed event per session
 CREATE INDEX idx_events_unprocessed_sessiontime
-    ON events (visitorid, sessionnumber, timestamp)
+    ON events (source_id, visitorid, sessionnumber, timestamp)
     WHERE processed IS NOT TRUE;
