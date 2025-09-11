@@ -18,6 +18,7 @@ Retrieve the output of the pipeline
 
 #### Query Parameters
 
+- _source_id (boolean)_; which source to view clusters for
 - _verbose (boolean)_; when false as by default, just show then number of users in each cluster. When set to true, show all the user ids in each cluster
 
 ## Jobs
