@@ -61,9 +61,9 @@ async def write_centroids(centroids: NDArray, source_id: int):
                 for i, centroid in enumerate(centroids):
                     await cur.execute("""
                     INSERT INTO cluster (source_id, cluster_id, centroid)
-                    SELECT 1, %(cluster_id)s, %(centroid)s
+                    SELECT %(source_id)s, %(cluster_id)s, %(centroid)s
                     WHERE NOT EXISTS (
-                        SELECT 1
+                        SELECT %(source_id)s
                         FROM cluster
                         WHERE source_id = %(source_id)s
                             AND cluster_id = %(cluster_id)s
