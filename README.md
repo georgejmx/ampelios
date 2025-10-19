@@ -128,6 +128,7 @@ curl -X POST http://127.0.0.1:1032/trigger \
   -H "Content-Type: application/json" \
   -d '{
     "source_id": 1,
+    "cluster_count": 5,
     "events_path": "./init-data/events.csv",
     "is_initial_flow": true
   }'

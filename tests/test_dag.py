@@ -7,15 +7,18 @@ from pipeline.dag import bulk_pipeline
 
 @pytest.mark.asyncio
 async def test_bulk_pipeline_success():
-    """Check full pipeline; save, save sessions, load, cluster"""
+    """Check full pipeline; save, save sessions, load, cluster, cleanup"""
 
     with (
-        patch("pipeline.dag.save_raw_events_csv", new_callable=AsyncMock) as mock_save,
+        patch(
+            "pipeline.dag.save_raw_events_csv", new_callable=AsyncMock
+        ) as mock_save,
         patch(
             "pipeline.dag.save_raw_events_sessions", new_callable=AsyncMock
         ) as mock_save_sessions,
         patch("pipeline.dag.load_journeys", new_callable=AsyncMock) as mock_load,
         patch("pipeline.dag.cluster_journeys", new_callable=AsyncMock) as mock_cluster,
+        patch("pipeline.dag.cleanup", new_callable=AsyncMock) as mock_cleanup,
         patch("pipeline.dag.logger") as mock_log,
     ):
         mock_save.return_value = {
@@ -43,6 +46,12 @@ async def test_bulk_pipeline_success():
         ]
 
         mock_cluster.return_value = {
+            "status": "success",
+            "message": "23456 user journeys clustered",
+            "count": 23456,
+        }
+
+        mock_cleanup.return_value = {
             "status": "success",
             "message": "23456 user journeys clustered",
             "count": 23456,

@@ -4,14 +4,13 @@ from pipeline.types import TaskSignature
 SESSION_DURATION_IN_MINUTES = 20
 
 
-async def main(batch_size: int, source_id: int) -> TaskSignature:
+async def main(batch_size: int) -> TaskSignature:
     query = """
     WITH visitor_batch AS (
         SELECT visitorid
         FROM events
         WHERE processed IS NOT TRUE
             AND sessionnumber IS NULL
-            AND source_id = %(source_id)s
         GROUP BY visitorid
         ORDER BY visitorid
         LIMIT %(batch_size)s
@@ -27,7 +26,6 @@ async def main(batch_size: int, source_id: int) -> TaskSignature:
             ) AS prev_time
         FROM events e
         JOIN visitor_batch vb ON e.visitorid = vb.visitorid
-        WHERE e.source_id = %(source_id)s
     ),
     session_flags AS (
         SELECT
@@ -55,8 +53,7 @@ async def main(batch_size: int, source_id: int) -> TaskSignature:
     UPDATE events e
     SET sessionnumber = s.session_number
     FROM sessions s
-    WHERE e._id = s._id
-        AND e.source_id = %(source_id)s;
+    WHERE e._id = s._id;
     """
     count = 0
 
@@ -65,8 +62,7 @@ async def main(batch_size: int, source_id: int) -> TaskSignature:
             async with conn.cursor() as cur:
                 await cur.execute(query, {
                     "batch_size": batch_size,
-                    "session_duration": SESSION_DURATION_IN_MINUTES,
-                    "source_id": source_id
+                    "session_duration": SESSION_DURATION_IN_MINUTES
                 })
                 count = cur.rowcount
 

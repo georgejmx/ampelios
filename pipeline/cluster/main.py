@@ -68,7 +68,7 @@ async def main(
 
     model.partial_fit(prediction_source)
     batch_labels = model.predict(prediction_source)
-    centroids: NDArray = model.cluster_centers_  # type: ignore
+    centroids: NDArray = model.cluster_centers_
 
     await write_centroids(centroids, source_id)
 

@@ -7,6 +7,7 @@ from .cluster import main as cluster
 from .load import main as load
 from .save import main as save
 from .save_sessions import main as save_sessions
+from .truncate_events import main as truncate_events
 
 USER_BATCH_SIZE = 20000
 BATCH_SIZE = 50000
@@ -19,8 +20,8 @@ async def save_raw_events_csv(source_filepath: str, source_id: int) -> TaskSigna
 
 
 @task(retries=1, retry_delay_seconds=2)
-async def save_raw_events_sessions(batch_size: int, source_id: int) -> TaskSignature:
-    return await save_sessions(batch_size, source_id)
+async def save_raw_events_sessions(batch_size: int) -> TaskSignature:
+    return await save_sessions(batch_size)
 
 
 @task(
@@ -50,6 +51,10 @@ async def cluster_journeys(
         is_initial_flow,
     )
 
+@task(retries=1, retry_delay_seconds=2)
+async def cleanup(source_id: int) -> TaskSignature:
+    return await truncate_events(source_id)
+
 
 @flow
 async def bulk_pipeline(
@@ -61,7 +66,7 @@ async def bulk_pipeline(
         return
 
     while True:
-        annotated_users = await save_raw_events_sessions(USER_BATCH_SIZE, source_id)
+        annotated_users = await save_raw_events_sessions(USER_BATCH_SIZE)
         if annotated_users["count"] == 0:
             break
     logger.info("Sessions annotated")
@@ -86,6 +91,7 @@ async def bulk_pipeline(
 
         clustered_events += BATCH_SIZE
 
+    await cleanup(source_id)
     logger.info("Bulk pipeline complete")
 
 
