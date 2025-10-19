@@ -16,8 +16,9 @@ def test_trigger_handler():
     with patch("server.api.bulk_pipeline", new_callable=AsyncMock):
         payload = {
             "source_id": 1,
+            "cluster_count": 5,
             "events_path": "./init-data/events.csv",
-            "is_initial_flow": True
+            "is_initial_flow": True,
         }
         response = client.post("/trigger", json=payload)
 

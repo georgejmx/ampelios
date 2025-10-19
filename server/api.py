@@ -33,20 +33,23 @@ def health_handler() -> str:
 @dataclass
 class TriggerRequest:
     source_id: int
+    cluster_count: int
     events_path: str
     is_initial_flow: Optional[bool] = None
 
 
 @api.post("/trigger")
-async def trigger_handler(
-    req: TriggerRequest,
-    background_tasks: BackgroundTasks
-) -> dict:
-    background_tasks.add_task(lambda: asyncio.run(bulk_pipeline(
-        req.source_id,
-        req.events_path,
-        req.is_initial_flow or False,
-    )))
+async def trigger_handler(req: TriggerRequest, background_tasks: BackgroundTasks) -> dict:
+    background_tasks.add_task(
+        lambda: asyncio.run(
+            bulk_pipeline(
+                req.source_id,
+                req.cluster_count,
+                req.events_path,
+                req.is_initial_flow or False,
+            )
+        )
+    )
 
     return {"detail": "started"}
 
