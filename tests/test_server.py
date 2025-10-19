@@ -1,4 +1,5 @@
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
+
 from fastapi.testclient import TestClient
 
 from server.api import api
@@ -16,8 +17,9 @@ def test_trigger_handler():
     with patch("server.api.bulk_pipeline", new_callable=AsyncMock):
         payload = {
             "source_id": 1,
+            "cluster_count": 5,
             "events_path": "./init-data/events.csv",
-            "is_initial_flow": True
+            "is_initial_flow": True,
         }
         response = client.post("/trigger", json=payload)
 

@@ -21,11 +21,12 @@ CREATE TABLE IF NOT EXISTS cluster (
 
 CREATE TABLE IF NOT EXISTS user_journey (
 	_id SERIAL PRIMARY KEY,
-	user_id INT NOT NULL UNIQUE,
+	user_id INT NOT NULL,
 	source_id INT NOT NULL,
 	state vector(3) NOT NULL,
 	paths vector[],
 	cluster_id INT,
+	UNIQUE (user_id, source_id),
 	FOREIGN KEY (source_id, cluster_id) REFERENCES cluster(source_id, cluster_id)
 );
 

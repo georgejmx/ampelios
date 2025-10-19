@@ -1,7 +1,7 @@
 from collections import defaultdict
+from typing import DefaultDict
 
 import numpy as np
-from typing import DefaultDict
 
 from pipeline.types import UserJourney
 
@@ -47,7 +47,7 @@ def process_row(
 def process_rows(
     events: list[tuple[int, int, str, int]],
 ) -> dict[int, UserJourney]:
-    journeys: DefaultDict[int, UserJourney] = defaultdict(dict) # type: ignore
+    journeys: DefaultDict[int, UserJourney] = defaultdict(dict)
     user_session: DefaultDict[int, int] = defaultdict(int)
 
     [process_row(event, journeys, user_session) for event in events]

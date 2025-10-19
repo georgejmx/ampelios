@@ -1,16 +1,16 @@
+import asyncio
 import logging
 import sys
-import asyncio
 from dataclasses import dataclass
-from typing_extensions import Any, Optional
+
 from fastapi import FastAPI
 from fastapi.background import BackgroundTasks
 from fastapi.responses import PlainTextResponse
+from typing_extensions import Any, Optional
 
 from pipeline.dag import bulk_pipeline
 
 from .view import get_clusters
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -33,20 +33,23 @@ def health_handler() -> str:
 @dataclass
 class TriggerRequest:
     source_id: int
+    cluster_count: int
     events_path: str
     is_initial_flow: Optional[bool] = None
 
 
 @api.post("/trigger")
-async def trigger_handler(
-    req: TriggerRequest,
-    background_tasks: BackgroundTasks
-) -> dict:
-    background_tasks.add_task(lambda: asyncio.run(bulk_pipeline(
-        req.source_id,
-        req.events_path,
-        req.is_initial_flow or False,
-    )))
+async def trigger_handler(req: TriggerRequest, background_tasks: BackgroundTasks) -> dict:
+    background_tasks.add_task(
+        lambda: asyncio.run(
+            bulk_pipeline(
+                req.source_id,
+                req.cluster_count,
+                req.events_path,
+                req.is_initial_flow or False,
+            )
+        )
+    )
 
     return {"detail": "started"}
 

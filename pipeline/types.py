@@ -1,5 +1,6 @@
+from typing import Literal, TypedDict
+
 from numpy.typing import NDArray
-from typing import TypedDict, Literal
 
 TaskStatus = Literal["success", "error", "skipped"]
 

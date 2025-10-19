@@ -1,6 +1,6 @@
 from numpy.typing import NDArray
-from typing_extensions import Iterator
 from psycopg.rows import TupleRow
+from typing_extensions import Iterator
 
 from pipeline.db_utils import (
     get_connection,

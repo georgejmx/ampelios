@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from pipeline.load.transforms import process_rows
 
 

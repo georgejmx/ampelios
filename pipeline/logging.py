@@ -1,5 +1,6 @@
-from prefect.logging import get_run_logger
 import logging
+
+from prefect.logging import get_run_logger
 
 logger = None
 

@@ -29,3 +29,10 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["pipeline", "server"]
 exclude = ["models*"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

@@ -1,9 +1,9 @@
-import numpy as np
-
 from os import path
-from sklearn.cluster import MiniBatchKMeans
+
+import numpy as np
+from joblib import dump, load
 from numpy.typing import NDArray
-from joblib import load, dump
+from sklearn.cluster import MiniBatchKMeans
 
 from pipeline.types import TaskSignature, UserJourneyRow
 
@@ -11,13 +11,13 @@ from .postgres import assign_clusters, get_user_journeys, write_centroids
 
 
 def extract_features(journey: UserJourneyRow) -> NDArray:
-    session_count = len(journey['steps'])
-    views_per_session = np.mean([ vec[0] for vec in journey['steps'] ])
-    buys_per_session = np.mean([ vec[2] for vec in journey['steps'] ])
+    session_count = len(journey["steps"])
+    views_per_session = np.mean([vec[0] for vec in journey["steps"]])
+    buys_per_session = np.mean([vec[2] for vec in journey["steps"]])
     purchase_ratio = buys_per_session / views_per_session if views_per_session else buys_per_session
 
     return np.concatenate([
-        journey['state'],
+        journey["state"],
         [float(session_count), views_per_session, purchase_ratio]
     ])
 
@@ -35,16 +35,16 @@ async def main(
     model_dir: str,
     num_clusters: int,
     fetch_batch_size: int,
-    is_initial_flow=False
+    is_initial_flow=False,
 ) -> TaskSignature:
     journeys = await get_user_journeys(fetch_batch_size, source_id)
     journey_count = len(journeys)
 
     if journey_count == 0:
         return {
-            'status': 'skipped',
-            'message': 'Ran out of unclustered user journeys',
-            'count': 0
+            "status": "skipped",
+            "message": "Ran out of unclustered user journeys",
+            "count": 0,
         }
 
     model = None
@@ -56,10 +56,10 @@ async def main(
             n_clusters=num_clusters,
             batch_size=journey_count,
             random_state=24,
-            init="k-means++"
+            init="k-means++",
         )
 
-    user_ids = [j['user_id'] for j in journeys]
+    user_ids = [j["user_id"] for j in journeys]
     prediction_source = parse_prediction_source(journeys)
 
     # nudge towards sensible clusters faster
@@ -68,7 +68,7 @@ async def main(
 
     model.partial_fit(prediction_source)
     batch_labels = model.predict(prediction_source)
-    centroids: NDArray = model.cluster_centers_ # type: ignore
+    centroids: NDArray = model.cluster_centers_
 
     await write_centroids(centroids, source_id)
 
@@ -77,7 +77,7 @@ async def main(
 
     dump(model, model_path)
     return {
-        'status': 'success',
-        'message': f"{len(user_ids)} user journeys clustered",
-        'count': len(user_ids)
+        "status": "success",
+        "message": f"{len(user_ids)} user journeys clustered",
+        "count": len(user_ids),
     }
