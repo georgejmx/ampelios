@@ -1,4 +1,5 @@
 from psycopg.rows import TupleRow
+
 from pipeline.db_utils import get_connection, postgres_vector_string_to_list
 from pipeline.types import ClusterRow
 

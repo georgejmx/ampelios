@@ -1,7 +1,6 @@
 from pipeline.db_utils import get_connection
 from pipeline.types import TaskSignature
 
-
 SESSION_DURATION_IN_MINUTES = 20
 
 

@@ -1,11 +1,11 @@
+from unittest.mock import AsyncMock, patch
+
+import numpy as np
 import pytest
 import pytest_asyncio
-from unittest.mock import AsyncMock, patch
-import numpy as np
 
-from pipeline.types import UserJourneyRow
 from pipeline.cluster import main as cluster
-
+from pipeline.types import UserJourneyRow
 
 TEST_MODEL_DIR = "./tests/tmp"
 

@@ -1,14 +1,15 @@
-from pipeline.logging import logger
 from typing import ItemsView
+
 from psycopg.rows import TupleRow
 
-from pipeline.types import UserJourney
 from pipeline.db_utils import (
     get_connection,
     postgres_vector_array_string_to_array,
     postgres_vector_string_to_array,
     vector_array_to_postgres_string,
 )
+from pipeline.logging import logger
+from pipeline.types import UserJourney
 
 
 async def fetch_user_journey_batch(batch_size: int, source_id: int) -> list[TupleRow]:

@@ -1,7 +1,8 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import numpy as np
 import pytest
 import pytest_asyncio
-import numpy as np
-from unittest.mock import AsyncMock, patch, MagicMock
 
 from pipeline.load.postgres import batch_update_user_journeys
 

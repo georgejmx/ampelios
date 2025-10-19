@@ -1,9 +1,9 @@
-import numpy as np
-
 from os import path
-from sklearn.cluster import MiniBatchKMeans
+
+import numpy as np
+from joblib import dump, load
 from numpy.typing import NDArray
-from joblib import load, dump
+from sklearn.cluster import MiniBatchKMeans
 
 from pipeline.types import TaskSignature, UserJourneyRow
 
@@ -16,7 +16,10 @@ def extract_features(journey: UserJourneyRow) -> NDArray:
     buys_per_session = np.mean([vec[2] for vec in journey["steps"]])
     purchase_ratio = buys_per_session / views_per_session if views_per_session else buys_per_session
 
-    return np.concatenate([journey["state"], [float(session_count), views_per_session, purchase_ratio]])
+    return np.concatenate([
+        journey["state"],
+        [float(session_count), views_per_session, purchase_ratio]
+    ])
 
 
 def parse_prediction_source(journeys: list[UserJourneyRow]) -> list[NDArray]:

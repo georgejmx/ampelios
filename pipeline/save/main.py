@@ -1,10 +1,9 @@
 import csv
-from os import path
 from io import StringIO
+from os import path
 
 from pipeline.db_utils import get_connection
 from pipeline.types import TaskSignature
-
 
 CSV_COLUMN_COUNT = 5
 

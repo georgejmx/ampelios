@@ -1,13 +1,12 @@
 from prefect import flow, task
 
-from pipeline.types import TaskSignature
 from pipeline.logging import logger
+from pipeline.types import TaskSignature
 
+from .cluster import main as cluster
+from .load import main as load
 from .save import main as save
 from .save_sessions import main as save_sessions
-from .load import main as load
-from .cluster import main as cluster
-
 
 USER_BATCH_SIZE = 20000
 BATCH_SIZE = 50000

@@ -1,16 +1,16 @@
+import asyncio
 import logging
 import sys
-import asyncio
 from dataclasses import dataclass
-from typing_extensions import Any, Optional
+
 from fastapi import FastAPI
 from fastapi.background import BackgroundTasks
 from fastapi.responses import PlainTextResponse
+from typing_extensions import Any, Optional
 
 from pipeline.dag import bulk_pipeline
 
 from .view import get_clusters
-
 
 logging.basicConfig(
     level=logging.INFO,

@@ -1,7 +1,7 @@
 from collections import defaultdict
+from typing import DefaultDict
 
 import numpy as np
-from typing import DefaultDict
 
 from pipeline.types import UserJourney
 
